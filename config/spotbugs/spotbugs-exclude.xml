@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+  <!-- Sample excludes (adjust to your packages/classes) -->
+
+  <!-- Example: ignore generated sources -->
+  <Match>
+    <Source name="~.*/build/generated/.*"/>
+  </Match>
+
+  <!-- Example: ignore a specific warning type in a class -->
+  <!--
+  <Match>
+    <Class name="com.equityseer.api.LegacyController"/>
+    <Bug pattern="NP_NULL_ON_SOME_PATH"/>
+  </Match>
+  -->
+</FindBugsFilter>
+

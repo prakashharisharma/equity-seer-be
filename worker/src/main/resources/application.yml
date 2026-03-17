@@ -1,0 +1,27 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: equity-seer-worker
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/equity_seer}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+worker:
+  userCount:
+    fixedDelay: 60000
+
+app:
+  name: equity-seer
+

@@ -1,0 +1,76 @@
+plugins {
+  id 'org.springframework.boot' version '3.5.11' apply false
+  id 'io.spring.dependency-management' version '1.1.7' apply false
+  id 'com.github.spotbugs' version '6.4.8' apply false
+}
+
+import com.github.spotbugs.snom.Confidence
+
+allprojects {
+  group = 'com.equityseer'
+  version = '0.0.1-SNAPSHOT'
+
+  repositories {
+    mavenCentral()
+  }
+}
+
+subprojects {
+  apply plugin: 'io.spring.dependency-management'
+
+  dependencyManagement {
+    imports {
+      mavenBom "org.springframework.boot:spring-boot-dependencies:3.5.11"
+    }
+  }
+
+  def configureJavaQuality = {
+    java {
+      toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+      }
+    }
+
+    // ---------- Code quality ----------
+    apply plugin: 'checkstyle'
+    apply plugin: 'com.github.spotbugs'
+
+    checkstyle {
+      toolVersion = '13.3.0'
+      configFile = rootProject.file('config/checkstyle/checkstyle.xml')
+      ignoreFailures = false
+      maxWarnings = 0
+    }
+
+    tasks.withType(Checkstyle).configureEach {
+      reports {
+        xml.required = false
+        html.required = true
+      }
+    }
+
+    spotbugs {
+      // Medium + High (SpotBugs uses "confidence" levels)
+      reportLevel = Confidence.valueOf('MEDIUM')
+      excludeFilter = rootProject.file('config/spotbugs/spotbugs-exclude.xml')
+    }
+
+    tasks.withType(com.github.spotbugs.snom.SpotBugsTask).configureEach {
+      ignoreFailures = false
+      reports {
+        // Groovy DSL: create if missing
+        reports.maybeCreate('xml').required.set(false)
+        reports.maybeCreate('html').required.set(true)
+      }
+    }
+  }
+
+  // Apply only when a Java plugin is present (avoids lifecycle issues)
+  pluginManager.withPlugin('java', configureJavaQuality)
+  pluginManager.withPlugin('java-library', configureJavaQuality)
+
+  tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+  }
+}
+

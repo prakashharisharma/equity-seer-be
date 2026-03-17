@@ -1,0 +1,11 @@
+rootProject.name = 'equity-seer-be'
+
+include(
+  'config',
+  'data',
+  'external',
+  'service',
+  'api',
+  'worker'
+)
+
