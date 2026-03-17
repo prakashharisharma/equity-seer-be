@@ -17,7 +17,7 @@ public class UserEntity {
   @Column(nullable = false)
   private String name;
 
-  protected UserEntity() { }
+  protected UserEntity() {}
 
   public UserEntity(String name) {
     this.name = name;
@@ -35,4 +35,3 @@ public class UserEntity {
     this.name = name;
   }
 }
-

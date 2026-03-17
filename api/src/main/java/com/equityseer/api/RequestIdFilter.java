@@ -21,8 +21,9 @@ public class RequestIdFilter extends OncePerRequestFilter {
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
     String requestId =
-        Optional.ofNullable(request.getHeader(HEADER_NAME)).filter(s -> !s.isBlank()).orElseGet(
-            () -> UUID.randomUUID().toString());
+        Optional.ofNullable(request.getHeader(HEADER_NAME))
+            .filter(s -> !s.isBlank())
+            .orElseGet(() -> UUID.randomUUID().toString());
 
     MDC.put(MDC_KEY, requestId);
     response.setHeader(HEADER_NAME, requestId);
@@ -33,4 +34,3 @@ public class RequestIdFilter extends OncePerRequestFilter {
     }
   }
 }
-

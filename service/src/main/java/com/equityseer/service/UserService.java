@@ -3,14 +3,13 @@ package com.equityseer.service;
 import com.equityseer.data.UserEntity;
 import com.equityseer.data.UserRepository;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 public class UserService {
-  private static final Logger LOG = LoggerFactory.getLogger(UserService.class);
   private final UserRepository userRepository;
 
   public UserService(UserRepository userRepository) {
@@ -19,7 +18,7 @@ public class UserService {
 
   @Transactional
   public UserEntity create(String name) {
-    LOG.info("Creating user with name={}", name); // parameterized logging
+    log.info("Creating user with name={}", name); // parameterized logging
     return userRepository.save(new UserEntity(name));
   }
 
@@ -28,4 +27,3 @@ public class UserService {
     return userRepository.findAll();
   }
 }
-

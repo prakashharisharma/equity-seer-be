@@ -1,14 +1,13 @@
 package com.equityseer.worker;
 
 import com.equityseer.service.UserService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 public class UserCountJob {
-  private static final Logger LOG = LoggerFactory.getLogger(UserCountJob.class);
   private final UserService userService;
 
   public UserCountJob(UserService userService) {
@@ -18,7 +17,6 @@ public class UserCountJob {
   @Scheduled(fixedDelayString = "${worker.userCount.fixedDelay:60000}")
   public void logUserCount() {
     var count = userService.list().size();
-    LOG.info("Current user count: {}", count);
+    log.info("Current user count: {}", count);
   }
 }
-

@@ -4,6 +4,7 @@
     "https://checkstyle.org/dtds/suppressions_1_2.dtd">
 
 <suppressions>
-  <!-- Add suppressions here if needed (keep minimal). -->
+  <!-- Allow descriptive JUnit test method names (e.g. save_throwsWhenNull) -->
+  <suppress checks="MethodName" files=".+/src/test/java/.+"/>
 </suppressions>
 

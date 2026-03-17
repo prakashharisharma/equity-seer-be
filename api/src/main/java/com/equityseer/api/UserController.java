@@ -29,6 +29,5 @@ public class UserController {
     return userService.create(request.name());
   }
 
-  public record CreateUserRequest(String name) { }
+  public record CreateUserRequest(String name) {}
 }
-

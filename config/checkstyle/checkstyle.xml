@@ -50,7 +50,6 @@
     <module name="OneStatementPerLine"/>
     <module name="NeedBraces"/>
     <module name="EmptyBlock"/>
-    <module name="WhitespaceAround"/>
     <module name="WhitespaceAfter"/>
   </module>
 </module>
