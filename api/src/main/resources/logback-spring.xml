@@ -41,7 +41,7 @@
   </springProfile>
 
   <!-- Default (if no profile matches) -->
-  <springProfile name="!dev & !local & !prod">
+  <springProfile name="!dev &amp; !local &amp; !prod">
     <root level="INFO">
       <appender-ref ref="CONSOLE"/>
       <appender-ref ref="ROLLING_FILE"/>
