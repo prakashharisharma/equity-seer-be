@@ -1,7 +1,7 @@
-package com.equityseer.stock.service;
+package com.equityseer.service.stock;
 
-import com.equityseer.stock.entity.StockOHLCV;
-import com.equityseer.stock.repository.StockOHLCVRepository;
+import com.equityseer.entity.stock.StockOHLCV;
+import com.equityseer.repository.stock.StockOHLCVRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;

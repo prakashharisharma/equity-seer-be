@@ -1,6 +1,6 @@
-package com.equityseer.stock.service;
+package com.equityseer.service.stock;
 
-import com.equityseer.stock.entity.StockOHLCV;
+import com.equityseer.entity.stock.StockOHLCV;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;

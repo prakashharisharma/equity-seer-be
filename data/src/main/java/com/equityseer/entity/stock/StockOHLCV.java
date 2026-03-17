@@ -1,4 +1,4 @@
-package com.equityseer.stock.entity;
+package com.equityseer.entity.stock;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
