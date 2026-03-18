@@ -51,7 +51,7 @@ class BhavcopyServiceImplTest {
 
     verify(bhavDownloadService).downloadFile(expectedUrl);
     assertThat(result).hasSize(1);
-    assertThat(result.getFirst().getNseSymbol()).isEqualTo("TCS");
+    assertThat(result.getFirst().getSymbol()).isEqualTo("TCS");
     assertThat(result.getFirst().getOpen()).isEqualTo(100.0);
     assertThat(result.getFirst().getHigh()).isEqualTo(110.0);
     assertThat(result.getFirst().getLow()).isEqualTo(90.0);

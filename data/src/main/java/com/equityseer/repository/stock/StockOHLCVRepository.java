@@ -7,13 +7,13 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface StockOHLCVRepository extends JpaRepository<StockOHLCV, Long> {
-  Optional<StockOHLCV> findByNseSymbolAndDate(String nseSymbol, LocalDate date);
+  Optional<StockOHLCV> findBySymbolAndDate(String symbol, LocalDate date);
 
-  List<StockOHLCV> findByNseSymbolAndDateBetween(String nseSymbol, LocalDate start, LocalDate end);
+  List<StockOHLCV> findBySymbolAndDateBetween(String symbol, LocalDate start, LocalDate end);
 
-  StockOHLCV findFirstByNseSymbolOrderByDateDesc(String nseSymbol);
+  StockOHLCV findFirstBySymbolOrderByDateDesc(String symbol);
 
-  default StockOHLCV findByNseSymbolOrderByDateDesc(String nseSymbol) {
-    return findFirstByNseSymbolOrderByDateDesc(nseSymbol);
+  default StockOHLCV findBySymbolOrderByDateDesc(String symbol) {
+    return findFirstBySymbolOrderByDateDesc(symbol);
   }
 }

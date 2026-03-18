@@ -10,11 +10,11 @@ public interface StockOHLCVService {
 
   List<StockOHLCV> saveAll(List<StockOHLCV> ohlcvs);
 
-  List<StockOHLCV> findBySymbolAndDateRange(String nseSymbol, LocalDate start, LocalDate end);
+  List<StockOHLCV> findBySymbolAndDateRange(String symbol, LocalDate start, LocalDate end);
 
-  Optional<StockOHLCV> findBySymbolAndDate(String nseSymbol, LocalDate date);
+  Optional<StockOHLCV> findBySymbolAndDate(String symbol, LocalDate date);
 
-  Optional<StockOHLCV> findLatestBySymbol(String nseSymbol);
+  Optional<StockOHLCV> findLatestBySymbol(String symbol);
 
   StockOHLCV upsert(StockOHLCV ohlcv);
 }

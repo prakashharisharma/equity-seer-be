@@ -1,7 +1,7 @@
 package com.equityseer.service;
 
-import com.equityseer.data.UserEntity;
-import com.equityseer.data.UserRepository;
+import com.equityseer.entity.user.UserEntity;
+import com.equityseer.repository.user.UserRepository;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

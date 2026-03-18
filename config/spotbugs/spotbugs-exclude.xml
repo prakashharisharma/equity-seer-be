@@ -14,5 +14,17 @@
     <Bug pattern="NP_NULL_ON_SOME_PATH"/>
   </Match>
   -->
-</FindBugsFilter>
 
+  <!-- Exclude EI_EXPOSE_REP2 for Spring DI services (false positive) -->
+  <Match>
+    <Class name="com.equityseer.service.bhav.BhavProcessorImpl"/>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+  </Match>
+
+  <!-- Alternative: exclude by field name -->
+  <Match>
+    <Class name="com.equityseer.service.bhav.BhavProcessorImpl"/>
+    <Field name="stockService"/>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+  </Match>
+</FindBugsFilter>

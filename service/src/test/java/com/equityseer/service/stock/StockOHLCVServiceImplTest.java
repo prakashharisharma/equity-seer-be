@@ -31,7 +31,7 @@ class StockOHLCVServiceImplTest {
 
   private static StockOHLCV valid(String symbol, LocalDate date) {
     var o = new StockOHLCV();
-    o.setNseSymbol(symbol);
+    o.setSymbol(symbol);
     o.setDate(date);
     o.setOpen(new BigDecimal("100.00"));
     o.setHigh(new BigDecimal("110.00"));
@@ -95,7 +95,7 @@ class StockOHLCVServiceImplTest {
 
   @Test
   void findLatestBySymbol_returnsEmptyWhenRepositoryReturnsNull() {
-    when(repository.findFirstByNseSymbolOrderByDateDesc("TCS")).thenReturn(null);
+    when(repository.findFirstBySymbolOrderByDateDesc("TCS")).thenReturn(null);
 
     assertThat(service.findLatestBySymbol("TCS")).isEmpty();
   }
@@ -104,7 +104,7 @@ class StockOHLCVServiceImplTest {
   void upsert_insertsWhenMissing() {
     var o = valid("TCS", LocalDate.of(2026, 1, 1));
 
-    when(repository.findByNseSymbolAndDate("TCS", LocalDate.of(2026, 1, 1)))
+    when(repository.findBySymbolAndDate("TCS", LocalDate.of(2026, 1, 1)))
         .thenReturn(Optional.empty());
     when(repository.save(o)).thenReturn(o);
 
@@ -126,7 +126,7 @@ class StockOHLCVServiceImplTest {
     var existing = valid("TCS", LocalDate.of(2026, 1, 1));
     existing.setId(99L);
 
-    when(repository.findByNseSymbolAndDate("TCS", LocalDate.of(2026, 1, 1)))
+    when(repository.findBySymbolAndDate("TCS", LocalDate.of(2026, 1, 1)))
         .thenReturn(Optional.of(existing));
     when(repository.save(any(StockOHLCV.class))).thenAnswer(inv -> inv.getArgument(0));
 

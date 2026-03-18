@@ -23,7 +23,7 @@ public class StockOHLCVServiceImpl implements StockOHLCVService {
   @Override
   public StockOHLCV save(StockOHLCV ohlcv) {
     validate(ohlcv);
-    log.debug("Saving OHLCV symbol={} date={}", ohlcv.getNseSymbol(), ohlcv.getDate());
+    log.debug("Saving OHLCV symbol={} date={}", ohlcv.getSymbol(), ohlcv.getDate());
     return repository.save(ohlcv);
   }
 
@@ -39,38 +39,37 @@ public class StockOHLCVServiceImpl implements StockOHLCVService {
   }
 
   @Override
-  public List<StockOHLCV> findBySymbolAndDateRange(
-      String nseSymbol, LocalDate start, LocalDate end) {
-    requireNonBlank(nseSymbol, "nseSymbol must not be blank");
+  public List<StockOHLCV> findBySymbolAndDateRange(String symbol, LocalDate start, LocalDate end) {
+    requireNonBlank(symbol, "symbol must not be blank");
     Objects.requireNonNull(start, "start must not be null");
     Objects.requireNonNull(end, "end must not be null");
     if (end.isBefore(start)) {
       throw new IllegalArgumentException("end must be >= start");
     }
-    return repository.findByNseSymbolAndDateBetween(nseSymbol, start, end);
+    return repository.findBySymbolAndDateBetween(symbol, start, end);
   }
 
   @Override
-  public Optional<StockOHLCV> findBySymbolAndDate(String nseSymbol, LocalDate date) {
-    requireNonBlank(nseSymbol, "nseSymbol must not be blank");
+  public Optional<StockOHLCV> findBySymbolAndDate(String symbol, LocalDate date) {
+    requireNonBlank(symbol, "symbol must not be blank");
     Objects.requireNonNull(date, "date must not be null");
-    return repository.findByNseSymbolAndDate(nseSymbol, date);
+    return repository.findBySymbolAndDate(symbol, date);
   }
 
   @Override
-  public Optional<StockOHLCV> findLatestBySymbol(String nseSymbol) {
-    requireNonBlank(nseSymbol, "nseSymbol must not be blank");
-    return Optional.ofNullable(repository.findFirstByNseSymbolOrderByDateDesc(nseSymbol));
+  public Optional<StockOHLCV> findLatestBySymbol(String symbol) {
+    requireNonBlank(symbol, "symbol must not be blank");
+    return Optional.ofNullable(repository.findFirstBySymbolOrderByDateDesc(symbol));
   }
 
   @Override
   @Transactional
   public StockOHLCV upsert(StockOHLCV ohlcv) {
     validate(ohlcv);
-    String symbol = ohlcv.getNseSymbol();
+    String symbol = ohlcv.getSymbol();
     LocalDate date = ohlcv.getDate();
 
-    Optional<StockOHLCV> existingOpt = repository.findByNseSymbolAndDate(symbol, date);
+    Optional<StockOHLCV> existingOpt = repository.findBySymbolAndDate(symbol, date);
     if (existingOpt.isPresent()) {
       StockOHLCV existing = existingOpt.get();
       existing.setOpen(ohlcv.getOpen());
@@ -90,7 +89,7 @@ public class StockOHLCVServiceImpl implements StockOHLCVService {
     Objects.requireNonNull(ohlcv, "ohlcv must not be null");
 
     Objects.requireNonNull(ohlcv.getDate(), "date must not be null");
-    requireNonBlank(ohlcv.getNseSymbol(), "nseSymbol must not be blank");
+    requireNonBlank(ohlcv.getSymbol(), "symbol must not be blank");
 
     requireNonNullDecimal(ohlcv.getOpen(), "open must not be null");
     BigDecimal high = requireNonNullDecimal(ohlcv.getHigh(), "high must not be null");

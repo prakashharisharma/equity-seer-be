@@ -1,6 +1,6 @@
 package com.equityseer.api;
 
-import com.equityseer.data.UserEntity;
+import com.equityseer.entity.user.UserEntity;
 import com.equityseer.service.UserService;
 import java.util.List;
 import org.springframework.http.HttpStatus;

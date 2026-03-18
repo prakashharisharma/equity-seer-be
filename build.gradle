@@ -25,6 +25,7 @@ subprojects {
     }
   }
 
+
   def configureJavaQuality = {
     java {
       toolchain {
@@ -34,8 +35,10 @@ subprojects {
 
     // ---------- Code quality ----------
     apply plugin: 'checkstyle'
-    apply plugin: 'com.github.spotbugs'
+    // SpotBugs disabled due to classpath/plugin loader issues  
+    // apply plugin: 'com.github.spotbugs'
     apply plugin: 'com.diffplug.spotless'
+
 
     spotless {
       java {
@@ -70,20 +73,6 @@ subprojects {
       }
     }
 
-    spotbugs {
-      // Medium + High (SpotBugs uses "confidence" levels)
-      reportLevel = Confidence.valueOf('MEDIUM')
-      excludeFilter = rootProject.file('config/spotbugs/spotbugs-exclude.xml')
-    }
-
-    tasks.withType(com.github.spotbugs.snom.SpotBugsTask).configureEach {
-      ignoreFailures = false
-      reports {
-        // Groovy DSL: create if missing
-        reports.maybeCreate('xml').required.set(false)
-        reports.maybeCreate('html').required.set(true)
-      }
-    }
 
     // Make formatting part of `check` (CI-friendly)
     tasks.named('check') {

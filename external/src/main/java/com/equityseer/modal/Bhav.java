@@ -31,7 +31,7 @@ public class Bhav implements Serializable {
   private String isin;
 
   @CsvBindByName(column = "TckrSymb")
-  private String nseSymbol;
+  private String symbol;
 
   @CsvBindByName(column = "SctySrs")
   private String series;

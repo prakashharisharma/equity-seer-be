@@ -21,15 +21,15 @@ import lombok.Setter;
 @AllArgsConstructor
 @Entity
 @Table(
-    name = "stock_ohlcv",
+    name = "stock_ohlcvs",
     uniqueConstraints = {
       @UniqueConstraint(
           name = "uk_stock_ohlcv_symbol_date",
-          columnNames = {"nse_symbol", "date"})
+          columnNames = {"symbol", "date"})
     },
     indexes = {
-      @Index(name = "idx_stock_ohlcv_symbol", columnList = "nse_symbol"),
-      @Index(name = "idx_stock_ohlcv_symbol_date", columnList = "nse_symbol,date")
+      @Index(name = "idx_stock_ohlcv_symbol", columnList = "symbol"),
+      @Index(name = "idx_stock_ohlcv_symbol_date", columnList = "symbol,date")
     })
 public class StockOHLCV {
   @Id
@@ -54,6 +54,6 @@ public class StockOHLCV {
   @Column(nullable = false)
   private Long volume;
 
-  @Column(name = "nse_symbol", nullable = false, length = 32)
-  private String nseSymbol;
+  @Column(name = "symbol", nullable = false, length = 32)
+  private String symbol;
 }
