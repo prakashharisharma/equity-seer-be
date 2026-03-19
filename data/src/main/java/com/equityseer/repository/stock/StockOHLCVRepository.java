@@ -5,6 +5,10 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface StockOHLCVRepository extends JpaRepository<StockOHLCV, Long> {
   Optional<StockOHLCV> findBySymbolAndDate(String symbol, LocalDate date);
@@ -16,4 +20,9 @@ public interface StockOHLCVRepository extends JpaRepository<StockOHLCV, Long> {
   default StockOHLCV findBySymbolOrderByDateDesc(String symbol) {
     return findFirstBySymbolOrderByDateDesc(symbol);
   }
+
+  @Modifying
+  @Transactional
+  @Query("DELETE FROM StockOHLCV s WHERE s.symbol = :symbol")
+  int deleteBySymbol(@Param("symbol") String symbol);
 }

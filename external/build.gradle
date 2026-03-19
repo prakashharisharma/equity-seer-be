@@ -3,6 +3,8 @@ plugins {
 }
 
 dependencies {
+    api project(':data')
+
   api 'org.springframework.boot:spring-boot-starter-web'
   api 'org.springframework.boot:spring-boot-starter-aop'
   api 'org.springframework.retry:spring-retry'

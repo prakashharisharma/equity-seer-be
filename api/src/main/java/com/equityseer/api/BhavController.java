@@ -29,4 +29,15 @@ public class BhavController {
     bhavOrchestrator.process(sessionDate);
     return ResponseEntity.status(HttpStatus.ACCEPTED).build();
   }
+
+  @PostMapping("/process-historical")
+  public ResponseEntity<String> processHistorical() {
+    log.info("Received historical data processing request");
+
+    // Run processing asynchronously
+    bhavOrchestrator.processHistorical();
+
+    return ResponseEntity.status(HttpStatus.ACCEPTED)
+        .body("Historical data processing started successfully");
+  }
 }

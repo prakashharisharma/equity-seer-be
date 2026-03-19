@@ -31,6 +31,9 @@ public class Stock {
   @Column(nullable = false, length = 50)
   private String series;
 
+  @Column(nullable = false)
+  private Boolean activityCompleted = false;
+
   protected Stock() {}
 
   public Stock(String symbol, String name, String isin, String series) {
@@ -38,6 +41,7 @@ public class Stock {
     this.name = name;
     this.isin = isin;
     this.series = series;
+    this.activityCompleted = false;
   }
 
   public Long getId() {
@@ -74,5 +78,13 @@ public class Stock {
 
   public void setSeries(String series) {
     this.series = series;
+  }
+
+  public Boolean getActivityCompleted() {
+    return activityCompleted;
+  }
+
+  public void setActivityCompleted(Boolean activityCompleted) {
+    this.activityCompleted = activityCompleted;
   }
 }
