@@ -77,27 +77,21 @@ public class BhavOrchestratorImpl implements BhavOrchestrator {
       // Fetch OHLCV data
       List<StockOHLCV> ohlcvs = mcService.getOHLCV(stock.getSymbol(), 30, 7350);
 
-      if (ohlcvs == null || ohlcvs.isEmpty()) {
-        log.warn("No OHLCV data received for stock: {}", stock.getSymbol());
-        stock.setActivityCompleted(true);
-        stockRepository.save(stock);
-        return;
+      boolean hasData = ohlcvs != null && !ohlcvs.isEmpty();
+
+      if (hasData) {
+        // Delete existing OHLCV records
+        int deletedCount = stockOHLCVRepository.deleteBySymbol(stock.getSymbol());
+        log.debug(
+            "Deleted {} existing OHLCV records for stock: {}", deletedCount, stock.getSymbol());
+
+        // Insert new OHLCV records
+        List<StockOHLCV> savedOhlcvs = stockOHLCVRepository.saveAll(ohlcvs);
+        log.info("Inserted {} OHLCV records for stock: {}", savedOhlcvs.size(), stock.getSymbol());
+      } else {
+        log.warn("No OHLCV data received for stock: {} - marking as completed", stock.getSymbol());
+        // For empty/null data, we still mark as completed since there's no data to process
       }
-
-      // Delete existing OHLCV records
-      int deletedCount = stockOHLCVRepository.deleteBySymbol(stock.getSymbol());
-      log.debug("Deleted {} existing OHLCV records for stock: {}", deletedCount, stock.getSymbol());
-
-      // Insert new OHLCV records
-      List<StockOHLCV> savedOhlcvs = stockOHLCVRepository.saveAll(ohlcvs);
-      log.info("Inserted {} OHLCV records for stock: {}", savedOhlcvs.size(), stock.getSymbol());
-
-      // Mark stock as completed
-      stock.setActivityCompleted(true);
-      stockRepository.save(stock);
-
-      // Clear persistence context to avoid memory bloat
-      entityManager.clear();
 
       // Add random delay between 500ms to 3000ms
       long delay = ThreadLocalRandom.current().nextLong(500, 3001);
@@ -108,9 +102,18 @@ public class BhavOrchestratorImpl implements BhavOrchestrator {
         log.warn("Thread interrupted during sleep for stock: {}", stock.getSymbol());
       }
 
+      // Mark stock as completed only after all operations succeed
+      stock.setActivityCompleted(true);
+      stockRepository.save(stock);
+      log.info(
+          "Successfully completed historical data processing for stock: {}", stock.getSymbol());
+
+      // Clear persistence context to avoid memory bloat
+      entityManager.clear();
+
     } catch (Exception e) {
       log.error("Error processing historical data for stock: {}", stock.getSymbol(), e);
-      throw e;
+      throw e; // Re-throw to trigger transaction rollback
     }
   }
 }

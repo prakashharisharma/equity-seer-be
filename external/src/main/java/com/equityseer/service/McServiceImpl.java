@@ -73,30 +73,67 @@ public class McServiceImpl implements McService {
 
     List<StockOHLCV> ohlcvList = new ArrayList<>();
 
+    // Check if ohlc or any required field is null
+    if (ohlc == null) {
+      log.warn("MCResult is null for symbol: {}", symbol);
+      return ohlcvList; // Return empty list
+    }
+
     List<Long> dates = ohlc.getT();
-
     List<Double> opens = ohlc.getO();
-
     List<Double> highs = ohlc.getH();
-
     List<Double> lows = ohlc.getL();
-
     List<Double> closes = ohlc.getC();
-
     List<Long> volumes = ohlc.getV();
 
-    for (int i = 0; i < dates.size(); i++) {
+    // Check if any of the required lists are null or empty
+    if (dates == null || dates.isEmpty()) {
+      log.warn("Dates list is null or empty for symbol: {}", symbol);
+      return ohlcvList; // Return empty list
+    }
 
-      StockOHLCV ohlcv = new StockOHLCV();
+    // Check if all lists have the same size
+    int size = dates.size();
+    if (opens == null
+        || opens.size() != size
+        || highs == null
+        || highs.size() != size
+        || lows == null
+        || lows.size() != size
+        || closes == null
+        || closes.size() != size
+        || volumes == null
+        || volumes.size() != size) {
+      log.warn(
+          "Data lists have mismatched sizes for symbol: {} - dates: {}, opens: {}, "
+              + "highs: {}, lows: {}, closes: {}, volumes: {}",
+          symbol,
+          size,
+          opens != null ? opens.size() : "null",
+          highs != null ? highs.size() : "null",
+          lows != null ? lows.size() : "null",
+          closes != null ? closes.size() : "null",
+          volumes != null ? volumes.size() : "null");
+      return ohlcvList; // Return empty list
+    }
 
-      ohlcv.setSymbol(symbol);
-      ohlcv.setOpen(BigDecimal.valueOf(opens.get(i)));
-      ohlcv.setHigh(BigDecimal.valueOf(highs.get(i)));
-      ohlcv.setLow(BigDecimal.valueOf(lows.get(i)));
-      ohlcv.setClose(BigDecimal.valueOf(closes.get(i)));
-      ohlcv.setVolume(volumes.get(i));
-      ohlcv.setDate(Instant.ofEpochSecond(dates.get(i)).atZone(UTC).toLocalDate());
-      ohlcvList.add(ohlcv);
+    for (int i = 0; i < size; i++) {
+      try {
+        StockOHLCV ohlcv = new StockOHLCV();
+
+        ohlcv.setSymbol(symbol);
+        ohlcv.setOpen(BigDecimal.valueOf(opens.get(i)));
+        ohlcv.setHigh(BigDecimal.valueOf(highs.get(i)));
+        ohlcv.setLow(BigDecimal.valueOf(lows.get(i)));
+        ohlcv.setClose(BigDecimal.valueOf(closes.get(i)));
+        ohlcv.setVolume(volumes.get(i));
+        ohlcv.setDate(Instant.ofEpochSecond(dates.get(i)).atZone(UTC).toLocalDate());
+        ohlcvList.add(ohlcv);
+      } catch (Exception e) {
+        log.error(
+            "Error mapping OHLCV data for symbol: {} at index {}: {}", symbol, i, e.getMessage());
+        // Continue with next record instead of failing completely
+      }
     }
 
     return ohlcvList;
