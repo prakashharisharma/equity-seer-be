@@ -8,9 +8,13 @@ spring:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/tnpdb}
     username: ${DB_USERNAME:riphco}
     password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: update
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+      format_sql: true
+      show_sql: true
     properties:
       hibernate:
         format_sql: true
@@ -19,6 +23,14 @@ spring:
         hbm2ddl:
           auto: update
     show-sql: true
+
+# SpringDoc OpenAPI Configuration
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+  show-actuator: false
 
 management:
   endpoints:

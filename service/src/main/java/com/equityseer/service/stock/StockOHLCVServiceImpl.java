@@ -2,8 +2,10 @@ package com.equityseer.service.stock;
 
 import com.equityseer.entity.stock.StockOHLCV;
 import com.equityseer.repository.stock.StockOHLCVRepository;
+import com.equityseer.type.TimeFrame;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -114,5 +116,139 @@ public class StockOHLCVServiceImpl implements StockOHLCVService {
     if (value == null || value.isBlank()) {
       throw new IllegalArgumentException(message);
     }
+  }
+
+  @Override
+  public List<StockOHLCV> get(String symbol, TimeFrame timeframe, int countBack) {
+    requireNonBlank(symbol, "symbol must not be blank");
+
+    if (countBack <= 0) {
+      countBack = 700; // Default count
+    }
+
+    log.debug("Getting {} OHLCV data for symbol: {}, countBack: {}", timeframe, symbol, countBack);
+
+    switch (timeframe) {
+      case DAILY:
+        return repository.findAllBySymbolOrderByDateDesc(symbol).stream().limit(countBack).toList();
+      case WEEKLY:
+        return getWeeklyData(symbol, countBack);
+      case MONTHLY:
+        return getMonthlyData(symbol, countBack);
+      case YEARLY:
+        return getYearlyData(symbol, countBack);
+      default:
+        throw new IllegalArgumentException("Unsupported timeframe: " + timeframe);
+    }
+  }
+
+  private List<StockOHLCV> getWeeklyData(String symbol, int countBack) {
+    LocalDate endDate = LocalDate.now();
+    LocalDate startDate = endDate.minusWeeks(countBack);
+
+    List<StockOHLCV> dailyData = repository.findBySymbolAndDateBetween(symbol, startDate, endDate);
+
+    return aggregateWeeklyData(dailyData);
+  }
+
+  private List<StockOHLCV> getMonthlyData(String symbol, int countBack) {
+    LocalDate endDate = LocalDate.now();
+    LocalDate startDate = endDate.minusMonths(countBack);
+
+    List<StockOHLCV> dailyData = repository.findBySymbolAndDateBetween(symbol, startDate, endDate);
+
+    return aggregateMonthlyData(dailyData);
+  }
+
+  private List<StockOHLCV> getYearlyData(String symbol, int countBack) {
+    LocalDate endDate = LocalDate.now();
+    LocalDate startDate = endDate.minusYears(countBack);
+
+    List<StockOHLCV> dailyData = repository.findBySymbolAndDateBetween(symbol, startDate, endDate);
+
+    return aggregateYearlyData(dailyData);
+  }
+
+  private List<StockOHLCV> aggregateWeeklyData(List<StockOHLCV> dailyData) {
+    return dailyData.stream()
+        .collect(
+            java.util.stream.Collectors.groupingBy(
+                ohlcv -> {
+                  LocalDate date = ohlcv.getDate();
+                  return date.with(TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY));
+                }))
+        .entrySet()
+        .stream()
+        .sorted((e1, e2) -> e2.getKey().compareTo(e1.getKey()))
+        .limit(700)
+        .map(
+            entry -> {
+              List<StockOHLCV> weekData = entry.getValue();
+              return createAggregatedOHLCV(weekData, entry.getKey());
+            })
+        .toList();
+  }
+
+  private List<StockOHLCV> aggregateMonthlyData(List<StockOHLCV> dailyData) {
+    return dailyData.stream()
+        .collect(
+            java.util.stream.Collectors.groupingBy(
+                ohlcv ->
+                    LocalDate.of(ohlcv.getDate().getYear(), ohlcv.getDate().getMonthValue(), 1)))
+        .entrySet()
+        .stream()
+        .sorted((e1, e2) -> e2.getKey().compareTo(e1.getKey()))
+        .limit(700)
+        .map(
+            entry -> {
+              List<StockOHLCV> monthData = entry.getValue();
+              return createAggregatedOHLCV(monthData, entry.getKey());
+            })
+        .toList();
+  }
+
+  private List<StockOHLCV> aggregateYearlyData(List<StockOHLCV> dailyData) {
+    return dailyData.stream()
+        .collect(
+            java.util.stream.Collectors.groupingBy(
+                ohlcv -> LocalDate.of(ohlcv.getDate().getYear(), 1, 1)))
+        .entrySet()
+        .stream()
+        .sorted((e1, e2) -> e2.getKey().compareTo(e1.getKey()))
+        .limit(700)
+        .map(
+            entry -> {
+              List<StockOHLCV> yearData = entry.getValue();
+              return createAggregatedOHLCV(yearData, entry.getKey());
+            })
+        .toList();
+  }
+
+  private StockOHLCV createAggregatedOHLCV(List<StockOHLCV> data, LocalDate periodDate) {
+    if (data.isEmpty()) {
+      return null;
+    }
+
+    BigDecimal open = data.get(0).getOpen();
+    BigDecimal close = data.get(data.size() - 1).getClose();
+
+    BigDecimal high =
+        data.stream().map(StockOHLCV::getHigh).max(BigDecimal::compareTo).orElse(BigDecimal.ZERO);
+
+    BigDecimal low =
+        data.stream().map(StockOHLCV::getLow).min(BigDecimal::compareTo).orElse(BigDecimal.ZERO);
+
+    Long volume = data.stream().mapToLong(StockOHLCV::getVolume).sum();
+
+    StockOHLCV aggregated = new StockOHLCV();
+    aggregated.setSymbol(data.get(0).getSymbol());
+    aggregated.setDate(periodDate);
+    aggregated.setOpen(open);
+    aggregated.setHigh(high);
+    aggregated.setLow(low);
+    aggregated.setClose(close);
+    aggregated.setVolume(volume);
+
+    return aggregated;
   }
 }

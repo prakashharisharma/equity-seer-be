@@ -31,12 +31,15 @@ import lombok.ToString;
     },
     indexes = {
       @Index(name = "idx_stock_ohlcv_symbol", columnList = "symbol"),
-      @Index(name = "idx_stock_ohlcv_symbol_date", columnList = "symbol,date")
+      @Index(name = "idx_stock_ohlcv_date", columnList = "date")
     })
 public class StockOHLCV {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
+
+  @Column(name = "symbol", nullable = false, length = 32)
+  private String symbol;
 
   @Column(nullable = false)
   private LocalDate date;
@@ -55,7 +58,4 @@ public class StockOHLCV {
 
   @Column(nullable = false)
   private Long volume;
-
-  @Column(name = "symbol", nullable = false, length = 32)
-  private String symbol;
 }
