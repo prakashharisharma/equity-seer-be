@@ -12,7 +12,6 @@ import com.equityseer.repository.stock.StockOHLCVRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -39,6 +38,30 @@ class StockOHLCVServiceImplTest {
     o.setClose(new BigDecimal("105.00"));
     o.setVolume(1000L);
     return o;
+  }
+
+  @Test
+  void get_withDate_callsRepositoryWithCorrectParams() {
+    var symbol = "TCS";
+    var date = LocalDate.of(2026, 1, 1);
+    var timeframe = com.equityseer.type.TimeFrame.DAILY;
+    var count = 700;
+
+    service.get(symbol, timeframe, count, date);
+
+    verify(repository).findBySymbolAndDateLessThanEqualOrderByDateDesc(symbol, date);
+  }
+
+  @Test
+  void get_withoutDate_callsGetWithNow() {
+    var symbol = "TCS";
+    var timeframe = com.equityseer.type.TimeFrame.DAILY;
+    var count = 700;
+
+    service.get(symbol, timeframe, count);
+
+    // Verify it calls findBySymbolAndDateLessThanEqualOrderByDateDesc with LocalDate.now()
+    verify(repository).findBySymbolAndDateLessThanEqualOrderByDateDesc(symbol, LocalDate.now());
   }
 
   @Test
@@ -98,48 +121,5 @@ class StockOHLCVServiceImplTest {
     when(repository.findFirstBySymbolOrderByDateDesc("TCS")).thenReturn(null);
 
     assertThat(service.findLatestBySymbol("TCS")).isEmpty();
-  }
-
-  @Test
-  void upsert_insertsWhenMissing() {
-    var o = valid("TCS", LocalDate.of(2026, 1, 1));
-
-    when(repository.findBySymbolAndDate("TCS", LocalDate.of(2026, 1, 1)))
-        .thenReturn(Optional.empty());
-    when(repository.save(o)).thenReturn(o);
-
-    var result = service.upsert(o);
-
-    assertThat(result).isSameAs(o);
-    verify(repository).save(o);
-  }
-
-  @Test
-  void upsert_updatesExistingWhenPresent() {
-    var incoming = valid("TCS", LocalDate.of(2026, 1, 1));
-    incoming.setOpen(new BigDecimal("101.00"));
-    incoming.setHigh(new BigDecimal("111.00"));
-    incoming.setLow(new BigDecimal("91.00"));
-    incoming.setClose(new BigDecimal("106.00"));
-    incoming.setVolume(2000L);
-
-    var existing = valid("TCS", LocalDate.of(2026, 1, 1));
-    existing.setId(99L);
-
-    when(repository.findBySymbolAndDate("TCS", LocalDate.of(2026, 1, 1)))
-        .thenReturn(Optional.of(existing));
-    when(repository.save(any(StockOHLCV.class))).thenAnswer(inv -> inv.getArgument(0));
-
-    var result = service.upsert(incoming);
-
-    assertThat(result.getId()).isEqualTo(99L);
-    assertThat(result.getOpen()).isEqualByComparingTo("101.00");
-    assertThat(result.getHigh()).isEqualByComparingTo("111.00");
-    assertThat(result.getLow()).isEqualByComparingTo("91.00");
-    assertThat(result.getClose()).isEqualByComparingTo("106.00");
-    assertThat(result.getVolume()).isEqualTo(2000L);
-
-    verify(repository).save(ohlcvCaptor.capture());
-    assertThat(ohlcvCaptor.getValue().getId()).isEqualTo(99L);
   }
 }

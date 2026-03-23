@@ -1,6 +1,6 @@
 package com.equityseer;
 
-import com.equityseer.service.McService;
+import com.equityseer.service.scanner.ScannerService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -10,13 +10,17 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class AppRunner implements CommandLineRunner {
 
-  @Autowired private McService mcService;
+  @Autowired private ScannerService scannerService;
 
   @Override
   public void run(String... args) throws Exception {
-
-    // List<StockOHLCV> stockOHLCVList = mcService.getOHLCV("TCS", 30, 7350);
-
-    // stockOHLCVList.forEach(System.out::println);
+    /*
+    List<Stock> stockList =
+        scannerService.scanEmaAlignmentWithMomentum(TimeFrame.MONTHLY, LocalDate.of(2026, 02, 28));
+    stockList.forEach(
+        s -> {
+          System.out.println(s.getSymbol());
+        });
+        */
   }
 }

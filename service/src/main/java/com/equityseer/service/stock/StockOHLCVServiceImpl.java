@@ -120,51 +120,62 @@ public class StockOHLCVServiceImpl implements StockOHLCVService {
 
   @Override
   public List<StockOHLCV> get(String symbol, TimeFrame timeframe, int countBack) {
+    return get(symbol, timeframe, countBack, LocalDate.now());
+  }
+
+  @Override
+  public List<StockOHLCV> get(
+      String symbol, TimeFrame timeframe, int countBack, LocalDate upToDate) {
     requireNonBlank(symbol, "symbol must not be blank");
+    Objects.requireNonNull(upToDate, "upToDate must not be null");
 
     if (countBack <= 0) {
       countBack = 700; // Default count
     }
 
-    log.debug("Getting {} OHLCV data for symbol: {}, countBack: {}", timeframe, symbol, countBack);
+    log.debug(
+        "Getting {} OHLCV data for symbol: {}, countBack: {}, upToDate: {}",
+        timeframe,
+        symbol,
+        countBack,
+        upToDate);
 
     switch (timeframe) {
       case DAILY:
-        return repository.findAllBySymbolOrderByDateDesc(symbol).stream().limit(countBack).toList();
+        return repository.findBySymbolAndDateLessThanEqualOrderByDateDesc(symbol, upToDate).stream()
+            .limit(countBack)
+            .toList();
       case WEEKLY:
-        return getWeeklyData(symbol, countBack);
+        return getWeeklyData(symbol, countBack, upToDate);
       case MONTHLY:
-        return getMonthlyData(symbol, countBack);
+        return getMonthlyData(symbol, countBack, upToDate);
       case YEARLY:
-        return getYearlyData(symbol, countBack);
+        return getYearlyData(symbol, countBack, upToDate);
       default:
         throw new IllegalArgumentException("Unsupported timeframe: " + timeframe);
     }
   }
 
-  private List<StockOHLCV> getWeeklyData(String symbol, int countBack) {
-    LocalDate endDate = LocalDate.now();
-    LocalDate startDate = endDate.minusWeeks(countBack);
+  private List<StockOHLCV> getWeeklyData(String symbol, int countBack, LocalDate upToDate) {
+    LocalDate startDate = upToDate.minusWeeks(countBack);
 
-    List<StockOHLCV> dailyData = repository.findBySymbolAndDateBetween(symbol, startDate, endDate);
+    List<StockOHLCV> dailyData = repository.findBySymbolAndDateBetween(symbol, startDate, upToDate);
 
     return aggregateWeeklyData(dailyData);
   }
 
-  private List<StockOHLCV> getMonthlyData(String symbol, int countBack) {
-    LocalDate endDate = LocalDate.now();
-    LocalDate startDate = endDate.minusMonths(countBack);
+  private List<StockOHLCV> getMonthlyData(String symbol, int countBack, LocalDate upToDate) {
+    LocalDate startDate = upToDate.minusMonths(countBack);
 
-    List<StockOHLCV> dailyData = repository.findBySymbolAndDateBetween(symbol, startDate, endDate);
+    List<StockOHLCV> dailyData = repository.findBySymbolAndDateBetween(symbol, startDate, upToDate);
 
     return aggregateMonthlyData(dailyData);
   }
 
-  private List<StockOHLCV> getYearlyData(String symbol, int countBack) {
-    LocalDate endDate = LocalDate.now();
-    LocalDate startDate = endDate.minusYears(countBack);
+  private List<StockOHLCV> getYearlyData(String symbol, int countBack, LocalDate upToDate) {
+    LocalDate startDate = upToDate.minusYears(countBack);
 
-    List<StockOHLCV> dailyData = repository.findBySymbolAndDateBetween(symbol, startDate, endDate);
+    List<StockOHLCV> dailyData = repository.findBySymbolAndDateBetween(symbol, startDate, upToDate);
 
     return aggregateYearlyData(dailyData);
   }

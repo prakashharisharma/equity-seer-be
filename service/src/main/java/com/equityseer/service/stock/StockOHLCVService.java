@@ -20,4 +20,6 @@ public interface StockOHLCVService {
   StockOHLCV upsert(StockOHLCV ohlcv);
 
   List<StockOHLCV> get(String symbol, TimeFrame timeframe, int countBack);
+
+  List<StockOHLCV> get(String symbol, TimeFrame timeframe, int countBack, LocalDate upToDate);
 }

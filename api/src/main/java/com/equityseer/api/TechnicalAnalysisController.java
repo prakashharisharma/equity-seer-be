@@ -5,9 +5,11 @@ import com.equityseer.modal.TechnicalIndicator;
 import com.equityseer.service.stock.StockOHLCVService;
 import com.equityseer.service.technical.TechnicalAnalysisService;
 import com.equityseer.type.TimeFrame;
+import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,20 +32,26 @@ public class TechnicalAnalysisController {
   public ResponseEntity<List<TechnicalIndicator<Double>>> calculatePriceSMA(
       @RequestParam("symbol") String symbol,
       @RequestParam(value = "timeframe", defaultValue = "DAILY") TimeFrame timeframe,
-      @RequestParam(value = "period", defaultValue = "20") int period) {
+      @RequestParam(value = "period", defaultValue = "20") int period,
+      @RequestParam(value = "date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+          LocalDate date) {
 
     log.info(
-        "Calculating Price SMA for symbol: {}, timeframe: {}, period: {}",
+        "Calculating Price SMA for symbol: {}, timeframe: {}, period: {}, date: {}",
         symbol,
         timeframe,
-        period);
+        period,
+        date);
 
     try {
       if (period <= 0) {
         return ResponseEntity.badRequest().build();
       }
 
-      List<StockOHLCV> data = stockOHLCVService.get(symbol, timeframe, OHLCV_FETCH_COUNT);
+      LocalDate effectiveDate = date != null ? date : LocalDate.now();
+      List<StockOHLCV> data =
+          stockOHLCVService.get(symbol, timeframe, OHLCV_FETCH_COUNT, effectiveDate);
+
       List<TechnicalIndicator<Double>> smaData =
           technicalAnalysisService.calculatePriceSMA(symbol, data, period);
 
@@ -58,20 +66,26 @@ public class TechnicalAnalysisController {
   public ResponseEntity<List<TechnicalIndicator<Long>>> calculateVolumeSMA(
       @RequestParam("symbol") String symbol,
       @RequestParam(value = "timeframe", defaultValue = "DAILY") TimeFrame timeframe,
-      @RequestParam(value = "period", defaultValue = "20") int period) {
+      @RequestParam(value = "period", defaultValue = "20") int period,
+      @RequestParam(value = "date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+          LocalDate date) {
 
     log.info(
-        "Calculating Volume SMA for symbol: {}, timeframe: {}, period: {}",
+        "Calculating Volume SMA for symbol: {}, timeframe: {}, period: {}, date: {}",
         symbol,
         timeframe,
-        period);
+        period,
+        date);
 
     try {
       if (period <= 0) {
         return ResponseEntity.badRequest().build();
       }
 
-      List<StockOHLCV> data = stockOHLCVService.get(symbol, timeframe, OHLCV_FETCH_COUNT);
+      LocalDate effectiveDate = date != null ? date : LocalDate.now();
+      List<StockOHLCV> data =
+          stockOHLCVService.get(symbol, timeframe, OHLCV_FETCH_COUNT, effectiveDate);
+
       List<TechnicalIndicator<Long>> volumeSmaData =
           technicalAnalysisService.calculateVolumeSMA(symbol, data, period);
 
@@ -86,17 +100,26 @@ public class TechnicalAnalysisController {
   public ResponseEntity<List<TechnicalIndicator<Double>>> calculateEMA(
       @RequestParam("symbol") String symbol,
       @RequestParam(value = "timeframe", defaultValue = "DAILY") TimeFrame timeframe,
-      @RequestParam(value = "period", defaultValue = "20") int period) {
+      @RequestParam(value = "period", defaultValue = "20") int period,
+      @RequestParam(value = "date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+          LocalDate date) {
 
     log.info(
-        "Calculating EMA for symbol: {}, timeframe: {}, period: {}", symbol, timeframe, period);
+        "Calculating EMA for symbol: {}, timeframe: {}, period: {}, date: {}",
+        symbol,
+        timeframe,
+        period,
+        date);
 
     try {
       if (period <= 0) {
         return ResponseEntity.badRequest().build();
       }
 
-      List<StockOHLCV> data = stockOHLCVService.get(symbol, timeframe, OHLCV_FETCH_COUNT);
+      LocalDate effectiveDate = date != null ? date : LocalDate.now();
+      List<StockOHLCV> data =
+          stockOHLCVService.get(symbol, timeframe, OHLCV_FETCH_COUNT, effectiveDate);
+
       List<TechnicalIndicator<Double>> emaData =
           technicalAnalysisService.calculateEMA(symbol, data, period);
 
@@ -111,17 +134,26 @@ public class TechnicalAnalysisController {
   public ResponseEntity<List<TechnicalIndicator<Double>>> calculateRSI(
       @RequestParam("symbol") String symbol,
       @RequestParam(value = "timeframe", defaultValue = "DAILY") TimeFrame timeframe,
-      @RequestParam(value = "period", defaultValue = "14") int period) {
+      @RequestParam(value = "period", defaultValue = "14") int period,
+      @RequestParam(value = "date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+          LocalDate date) {
 
     log.info(
-        "Calculating RSI for symbol: {}, timeframe: {}, period: {}", symbol, timeframe, period);
+        "Calculating RSI for symbol: {}, timeframe: {}, period: {}, date: {}",
+        symbol,
+        timeframe,
+        period,
+        date);
 
     try {
       if (period <= 0) {
         return ResponseEntity.badRequest().build();
       }
 
-      List<StockOHLCV> data = stockOHLCVService.get(symbol, timeframe, OHLCV_FETCH_COUNT);
+      LocalDate effectiveDate = date != null ? date : LocalDate.now();
+      List<StockOHLCV> data =
+          stockOHLCVService.get(symbol, timeframe, OHLCV_FETCH_COUNT, effectiveDate);
+
       List<TechnicalIndicator<Double>> rsiData =
           technicalAnalysisService.calculateRSI(symbol, data, period);
 

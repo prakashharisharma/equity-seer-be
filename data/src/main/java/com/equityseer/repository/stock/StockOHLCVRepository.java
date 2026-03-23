@@ -23,6 +23,8 @@ public interface StockOHLCVRepository extends JpaRepository<StockOHLCV, Long> {
 
   List<StockOHLCV> findAllBySymbolOrderByDateDesc(String symbol);
 
+  List<StockOHLCV> findBySymbolAndDateLessThanEqualOrderByDateDesc(String symbol, LocalDate date);
+
   @Modifying
   @Transactional
   @Query("DELETE FROM StockOHLCV s WHERE s.symbol = :symbol")
