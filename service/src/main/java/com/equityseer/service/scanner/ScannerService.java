@@ -15,4 +15,13 @@ public interface ScannerService {
    * @return List of stocks matching the criteria
    */
   List<Stock> scanEmaAlignmentWithMomentum(TimeFrame timeframe, LocalDate date);
+
+  /**
+   * Scan for stocks that exhibit volume expansion with price action signals.
+   *
+   * @param timeframe Timeframe for the scan
+   * @param date Date to scan for
+   * @return List of stocks matching the criteria
+   */
+  List<Stock> scanVolumeExpansionWithPriceActionSignal(TimeFrame timeframe, LocalDate date);
 }
