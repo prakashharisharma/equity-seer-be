@@ -3,6 +3,7 @@ package com.equityseer;
 import com.equityseer.entity.stock.Stock;
 import com.equityseer.service.scanner.ScannerService;
 import com.equityseer.service.scoring.ScoringService;
+import com.equityseer.service.validation.ValidationService;
 import com.equityseer.type.TimeFrame;
 import java.time.LocalDate;
 import java.util.List;
@@ -19,6 +20,8 @@ public class AppRunner implements CommandLineRunner {
 
   @Autowired private ScoringService scoringService;
 
+  @Autowired private ValidationService validationService;
+
   @Override
   public void run(String... args) throws Exception {
     this.printStockList();
@@ -32,10 +35,12 @@ public class AppRunner implements CommandLineRunner {
     record ScoredStock(String symbol, double score) {}
 
     stockList.stream()
+        .filter(s -> validationService.isValid(s.getSymbol(), TimeFrame.MONTHLY, date))
         .map(
             s ->
                 new ScoredStock(
                     s.getSymbol(), scoringService.score(s.getSymbol(), TimeFrame.MONTHLY, date)))
+        .filter(s -> s.score() > 5.0)
         .sorted((a, b) -> Double.compare(b.score(), a.score()))
         .forEach(s -> System.out.println(s.symbol() + " : " + s.score()));
   }

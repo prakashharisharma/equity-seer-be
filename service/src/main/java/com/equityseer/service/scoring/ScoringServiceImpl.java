@@ -112,6 +112,10 @@ public class ScoringServiceImpl implements ScoringService {
       return 4.0;
     }
 
+    // Rule 3: At least 3 MAs increasing and close > EMA50
+    if (increasingCount >= 3 && s.cur.getClose().doubleValue() > s.ema50) {
+      return 3.0;
+    }
     return 0.0;
   }
 
