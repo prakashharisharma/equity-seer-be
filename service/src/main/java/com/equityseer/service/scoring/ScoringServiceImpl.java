@@ -19,10 +19,6 @@ public class ScoringServiceImpl implements ScoringService {
 
   private static final int OHLCV_FETCH_COUNT = 700;
 
-  // Weights
-  private static final double VOL_WEIGHT = 0.40;
-  private static final double MA_WEIGHT = 0.60;
-
   private final StockOHLCVService stockOHLCVService;
   private final TechnicalAnalysisService technicalAnalysisService;
 
@@ -41,15 +37,17 @@ public class ScoringServiceImpl implements ScoringService {
       double volScore = calculateVolumeScore(s);
       double maScore = calculateMAScore(s);
 
-      double finalScore = (volScore * VOL_WEIGHT) + (maScore * MA_WEIGHT);
+      double finalScore = volScore + maScore;
 
-      // 🔻 Long upper wick penalty
+      // 🔻 Optional penalty
+      /*
+       * Long upper wick can be a sign of a pullback, so we penalize it.
+
       if (isLongUpperWick(s.cur)) {
-        finalScore -= 0.05;
-      }
+        finalScore -= 1.0;
+      } */
 
-      double result = Math.max(0.0, finalScore * 10);
-      return Math.min(10.0, result);
+      return Math.max(0.0, Math.min(10.0, finalScore));
 
     } catch (Exception e) {
       log.error("Error calculating score for symbol: {} at {}", symbol, date, e);
@@ -58,75 +56,74 @@ public class ScoringServiceImpl implements ScoringService {
   }
 
   // =========================
-  // 🔹 VOLUME SCORE
+  // 🔹 VOLUME SCORE (0-5)
   // =========================
   private double calculateVolumeScore(ScoreSummary s) {
 
-    double ratio = s.v0 / (s.avgV1 == 0 ? 1 : s.avgV1);
-
-    if (ratio > 2.0) {
-      return 1.0;
-    }
-    if (ratio > 1.5) {
-      return 0.8;
-    }
-    if (ratio > 1.2) {
-      return 0.6;
-    }
-
+    // Strong bullish volume expansion
     if (s.v0 > s.v1 && s.v1 > s.v2) {
-      return 0.5;
+      return 5.0;
+    }
+
+    // Average volume trend improving
+    if (s.avgV0 > s.avgV1 && s.avgV1 > s.avgV2) {
+      return 4.0;
     }
 
     return 0.0;
   }
 
   // =========================
-  // 🔹 MA TREND SCORE
+  // 🔹 MA SCORE (0-5)
   // =========================
   private double calculateMAScore(ScoreSummary s) {
 
-    double score = 0;
+    int increasingCount = 0;
 
-    if (isIncreasing(s.ema5, s.prevEma5, 0.001)) {
-      score += 0.5;
+    boolean ema5Inc = isIncreasing(s.ema5, s.prevEma5);
+    boolean ema20Inc = isIncreasing(s.ema20, s.prevEma20);
+    boolean ema50Inc = isIncreasing(s.ema50, s.prevEma50);
+    boolean sma100Inc = isIncreasing(s.sma100, s.prevSma100);
+    boolean sma200Inc = isIncreasing(s.sma200, s.prevSma200);
+
+    if (ema5Inc) {
+      increasingCount++;
     }
-    if (isIncreasing(s.ema20, s.prevEma20, 0.001)) {
-      score += 1.0;
+    if (ema20Inc) {
+      increasingCount++;
     }
-    if (isIncreasing(s.ema50, s.prevEma50, 0.001)) {
-      score += 1.5;
+    if (ema50Inc) {
+      increasingCount++;
     }
-    if (isIncreasing(s.sma100, s.prevSma100, 0.001)) {
-      score += 2.0;
+    if (sma100Inc) {
+      increasingCount++;
     }
-    if (isIncreasing(s.sma200, s.prevSma200, 0.001)) {
-      score += 3.0;
+    if (sma200Inc) {
+      increasingCount++;
     }
 
-    score = score / 8.0;
-
-    if (s.ema20 > s.ema50 && s.ema50 > s.sma100 && s.sma100 > s.sma200) {
-      score = Math.min(1.0, score + 0.1);
+    // Rule 1: EMA5, EMA20, EMA50 all increasing
+    if (ema5Inc && ema20Inc && ema50Inc) {
+      return 5.0;
     }
 
-    return score;
+    // Rule 2: EMA5 or EMA20 increasing + total >= 3
+    if ((ema5Inc || (ema20Inc && ema50Inc)) && increasingCount >= 3) {
+      return 4.0;
+    }
+
+    return 0.0;
   }
 
   // =========================
   // 🔹 HELPERS
   // =========================
 
-  private boolean isIncreasing(double cur, double prev, double threshold) {
-    return (cur - prev) / prev > threshold;
-  }
-
-  private boolean isCloseInTopRange(double close, double low, double high, double pct) {
-    double range = high - low;
-    if (range <= 0) {
+  private boolean isIncreasing(double cur, double prev) {
+    if (prev == 0) {
       return false;
     }
-    return (high - close) / range <= pct;
+    return cur > prev;
   }
 
   private boolean isLongUpperWick(StockOHLCV ohlcv) {
@@ -155,18 +152,24 @@ public class ScoringServiceImpl implements ScoringService {
         technicalAnalysisService.calculatePriceSMA(symbol, data, 100);
     List<TechnicalIndicator<Double>> sma200 =
         technicalAnalysisService.calculatePriceSMA(symbol, data, 200);
-
-    StockOHLCV cur = data.get(0);
-    StockOHLCV prev = data.get(1);
+    List<TechnicalIndicator<Long>> volSma20 =
+        technicalAnalysisService.calculateVolumeSMA(symbol, data, 20);
 
     return ScoreSummary.builder()
-        .cur(cur)
-        .prev(prev)
-        .v0(cur.getVolume().doubleValue())
-        .v1(prev.getVolume().doubleValue())
+        .cur(data.get(0))
+        .prev(data.get(1))
+
+        // Volume
+        .v0(data.get(0).getVolume().doubleValue())
+        .v1(data.get(1).getVolume().doubleValue())
         .v2(data.get(2).getVolume().doubleValue())
-        .v3(data.get(3).getVolume().doubleValue())
-        .avgV1(calculateAvgVolume(data, 1, 5))
+
+        // Avg Volume blocks (using Volume SMA with period 5)
+        .avgV0(volSma20.get(0).getValue().doubleValue())
+        .avgV1(volSma20.get(5).getValue().doubleValue())
+        .avgV2(volSma20.get(10).getValue().doubleValue())
+
+        // MAs
         .ema5(ema5.get(0).getValue())
         .prevEma5(ema5.get(1).getValue())
         .ema20(ema20.get(0).getValue())
@@ -180,20 +183,14 @@ public class ScoringServiceImpl implements ScoringService {
         .build();
   }
 
-  private double calculateAvgVolume(List<StockOHLCV> data, int start, int period) {
-    double sum = 0;
-    for (int i = 0; i < period; i++) {
-      sum += data.get(start + i).getVolume().doubleValue();
-    }
-    return sum / period;
-  }
-
   @Builder
   private static class ScoreSummary {
+
     StockOHLCV cur;
     StockOHLCV prev;
-    double v0, v1, v2, v3;
-    double avgV1;
+
+    double v0, v1, v2;
+    double avgV0, avgV1, avgV2;
     double ema5, prevEma5;
     double ema20, prevEma20;
     double ema50, prevEma50;

@@ -132,13 +132,20 @@ public class ScannerServiceImpl implements ScannerService {
           continue;
         }
 
-        // 1. Liquidity Filter: 3-session Avg Volume ≥ 1,000,000
-        double avgVol0 = calculateAvgVolume(data, 0, 3);
+        // 1. Liquidity Filter: 20-session Avg Volume ≥ 1,000,000
+        List<TechnicalIndicator<Long>> volSma20 =
+            technicalAnalysisService.calculateVolumeSMA(symbol, data, 20);
+
+        if (volSma20 == null || volSma20.isEmpty()) {
+          continue;
+        }
+
+        double avgVol0 = volSma20.get(0).getValue().doubleValue();
         if (avgVol0 < 1_000_000) {
           continue;
         }
 
-        if (!hasVolumeExpansion(data, avgVol0)) {
+        if (!hasVolumeExpansion(data, volSma20)) {
           continue;
         }
 
@@ -160,7 +167,8 @@ public class ScannerServiceImpl implements ScannerService {
     return matchingStocks;
   }
 
-  private boolean hasVolumeExpansion(List<StockOHLCV> data, double avgVol0) {
+  private boolean hasVolumeExpansion(
+      List<StockOHLCV> data, List<TechnicalIndicator<Long>> volSma20) {
     StockOHLCV cur = data.get(0);
     StockOHLCV prev = data.get(1);
 
@@ -169,8 +177,10 @@ public class ScannerServiceImpl implements ScannerService {
     double v2 = data.get(2).getVolume().doubleValue();
     double v3 = data.get(3).getVolume().doubleValue();
 
-    double avgVol1 = calculateAvgVolume(data, 1, 3);
-    double avgVol2 = calculateAvgVolume(data, 2, 3);
+    // Use volSma20 values. Note: volSma20 has same order as data (descending)
+    double avgVol0 = volSma20.get(0).getValue().doubleValue();
+    double avgVol1 = volSma20.get(1).getValue().doubleValue();
+    double avgVol2 = volSma20.get(2).getValue().doubleValue();
 
     boolean conditionA = v0 > v1 && v1 > v2;
     boolean conditionB = avgVol0 > avgVol1 && avgVol1 > avgVol2;
@@ -227,17 +237,6 @@ public class ScannerServiceImpl implements ScannerService {
     boolean rejection =
         curLow < level && curClose > level && isCloseInTopRange(curClose, curLow, curHigh, 0.3);
     return breakout || rejection;
-  }
-
-  private double calculateAvgVolume(List<StockOHLCV> data, int startIndex, int period) {
-    if (data.size() < startIndex + period) {
-      return 0;
-    }
-    double sum = 0;
-    for (int i = 0; i < period; i++) {
-      sum += data.get(startIndex + i).getVolume().doubleValue();
-    }
-    return sum / period;
   }
 
   private boolean isCloseInTopRange(double close, double low, double high, double topRangePercent) {
