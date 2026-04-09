@@ -186,7 +186,7 @@ public class ScannerServiceImpl implements ScannerService {
     boolean conditionB = avgVol0 > avgVol1 && avgVol1 > avgVol2;
     boolean conditionC = (avgVol0 > avgVol1) && (v1 > v2 && v2 > v3);
 
-    return conditionA || conditionB || conditionC;
+    return conditionA; // || conditionB || conditionC;
   }
 
   private boolean hasPriceActionSignal(
