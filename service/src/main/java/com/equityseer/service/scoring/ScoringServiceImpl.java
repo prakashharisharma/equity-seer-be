@@ -39,13 +39,7 @@ public class ScoringServiceImpl implements ScoringService {
 
       double finalScore = volScore + maScore;
 
-      // 🔻 Optional penalty
-      /*
-       * Long upper wick can be a sign of a pullback, so we penalize it.
-
-      if (isLongUpperWick(s.cur)) {
-        finalScore -= 1.0;
-      } */
+      finalScore -= calculatePenalties(s);
 
       return Math.max(0.0, Math.min(10.0, finalScore));
 
@@ -117,6 +111,27 @@ public class ScoringServiceImpl implements ScoringService {
       return 3.0;
     }
     return 0.0;
+  }
+
+  // =========================
+  // 🔹 PENALTIES
+  // =========================
+  private double calculatePenalties(ScoreSummary s) {
+    double totalPenalty = 0.0;
+
+    // 🔻 Volume Average Penalties
+    if (s.avgV0 < s.avgV1 && s.avgV1 < s.avgV2) {
+      totalPenalty += 5.0;
+    } else if (s.avgV0 < s.avgV1) {
+      totalPenalty += 1.0;
+    }
+
+    // 🔻 Volume Spike Penalty
+    if (s.v0 > s.avgV0 * 3) {
+      totalPenalty += 2.0;
+    }
+
+    return totalPenalty;
   }
 
   // =========================
