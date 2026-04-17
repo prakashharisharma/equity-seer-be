@@ -40,6 +40,7 @@ public class ScoringServiceImpl implements ScoringService {
       double finalScore = volScore + maScore;
 
       finalScore -= calculatePenalties(s);
+      finalScore -= addAdditionalPenalties(s, timeframe, data);
 
       return Math.max(0.0, Math.min(10.0, finalScore));
 
@@ -132,6 +133,57 @@ public class ScoringServiceImpl implements ScoringService {
     }
 
     return totalPenalty;
+  }
+
+  private double addAdditionalPenalties(
+      ScoreSummary s, TimeFrame timeframe, List<StockOHLCV> data) {
+    double v0 = s.v0;
+    double v1 = s.v1;
+    double avgV0 = s.avgV0;
+    double close = s.cur.getClose().doubleValue();
+    double penalty = 0.0;
+
+    boolean aboveAllMAs =
+        close > s.ema5
+            && close > s.ema20
+            && close > s.ema50
+            && close > s.sma100
+            && close > s.sma200;
+
+    double monthlyGain = calculateMonthlyGain(timeframe, data);
+
+    // Rule 1: Volume Spike Confluence (-5)
+    boolean volumeCondA = (v0 > v1 * 2) && (v0 > avgV0 * 2.25);
+    boolean volumeCondB = (v0 > v1 * 2.25) && (v0 > avgV0 * 2);
+    if ((volumeCondA || volumeCondB) && (aboveAllMAs || monthlyGain > 0.50)) {
+      penalty += 5.0;
+    }
+
+    // Rule 2: High Volume Exhaustion (-4)
+    if ((v0 > avgV0 * 3.0) && (aboveAllMAs || monthlyGain > 0.40)) {
+      penalty += 4.0;
+    }
+
+    return penalty;
+  }
+
+  private double calculateMonthlyGain(TimeFrame timeframe, List<StockOHLCV> data) {
+    int lookback =
+        switch (timeframe) {
+          case DAILY -> 20;
+          case WEEKLY -> 4;
+          case MONTHLY -> 1;
+          default -> 0;
+        };
+
+    if (lookback > 0 && data.size() > lookback) {
+      double curClose = data.get(0).getClose().doubleValue();
+      double prevClose = data.get(lookback).getClose().doubleValue();
+      if (prevClose > 0) {
+        return (curClose - prevClose) / prevClose;
+      }
+    }
+    return 0.0;
   }
 
   // =========================

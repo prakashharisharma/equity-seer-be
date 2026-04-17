@@ -28,7 +28,7 @@ public class AppRunner implements CommandLineRunner {
   }
 
   private void printStockList() {
-    LocalDate date = LocalDate.of(2025, 1, 31);
+    LocalDate date = LocalDate.of(2024, 1, 31);
     List<Stock> stockList =
         scannerService.scanVolumeExpansionWithPriceActionSignal(TimeFrame.MONTHLY, date);
 
