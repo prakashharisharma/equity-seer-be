@@ -42,7 +42,8 @@ public class ScoringServiceImpl implements ScoringService {
       finalScore -= calculatePenalties(s);
       finalScore -= addAdditionalPenalties(s, timeframe, data);
 
-      return Math.max(0.0, Math.min(10.0, finalScore));
+      double result = Math.max(0.0, Math.min(10.0, finalScore));
+      return Math.round(result * 100.0) / 100.0;
 
     } catch (Exception e) {
       log.error("Error calculating score for symbol: {} at {}", symbol, date, e);
