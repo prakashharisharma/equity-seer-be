@@ -36,8 +36,8 @@ public class AppRunner implements CommandLineRunner {
 
   private void printStockList() {
     // LocalDate date = LocalDate.of(2024, 1, 31);
-    int year = 2023;
-    int month = 9;
+    int year = 2024;
+    int month = 02;
 
     LocalDate date = YearMonth.of(year, month).atEndOfMonth();
     List<Stock> stockList =
@@ -48,12 +48,14 @@ public class AppRunner implements CommandLineRunner {
     stockList.stream()
         .filter(s -> validationService.isValid(s.getSymbol(), TimeFrame.MONTHLY, date))
         .map(
-            s ->
-                new ScoredStock(
-                    s.getSymbol(),
-                    scoringService.score(s.getSymbol(), TimeFrame.MONTHLY, date),
-                    entryPriceService.calculate(s.getSymbol(), TimeFrame.MONTHLY, date),
-                    stopLossService.calculate(s.getSymbol(), TimeFrame.MONTHLY, date)))
+            s -> {
+              double score = scoringService.score(s.getSymbol(), TimeFrame.MONTHLY, date);
+              return new ScoredStock(
+                  s.getSymbol(),
+                  score,
+                  entryPriceService.calculate(s.getSymbol(), TimeFrame.MONTHLY, date, score),
+                  stopLossService.calculate(s.getSymbol(), TimeFrame.MONTHLY, date));
+            })
         .filter(s -> s.score() > 5.0)
         .sorted((a, b) -> Double.compare(b.score(), a.score()))
         .forEach(

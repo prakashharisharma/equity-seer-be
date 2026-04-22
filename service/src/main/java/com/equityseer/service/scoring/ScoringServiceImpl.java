@@ -165,6 +165,11 @@ public class ScoringServiceImpl implements ScoringService {
       penalty += 4.0;
     }
 
+    // Rule 3: Extreme Volume Spike with Gain 30%
+    if (v0 > avgV0 * 5.0 && monthlyGain > 0.30) {
+      penalty += 3.0;
+    }
+
     return penalty;
   }
 

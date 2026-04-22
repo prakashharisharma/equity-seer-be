@@ -18,14 +18,16 @@ public class StopLossServiceImpl implements StopLossService {
 
   @Override
   public double calculate(String symbol, TimeFrame timeframe, LocalDate date) {
-    List<StockOHLCV> data = stockOHLCVService.get(symbol, timeframe, 1, date);
+    List<StockOHLCV> data = stockOHLCVService.get(symbol, timeframe, 3, date);
     if (data == null || data.isEmpty()) {
       log.warn("No data found for symbol: {} at date: {}", symbol, date);
       return 0.0;
     }
 
-    double low = data.get(0).getLow().doubleValue();
-    double stopLoss = low * 0.99; // low - 1%
+    double minLow =
+        data.stream().map(ohlcv -> ohlcv.getLow().doubleValue()).min(Double::compare).orElse(0.0);
+
+    double stopLoss = minLow * 0.99; // lowest low - 1%
     return Math.round(stopLoss * 100.0) / 100.0;
   }
 }

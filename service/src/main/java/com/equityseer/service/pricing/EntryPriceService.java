@@ -10,7 +10,8 @@ public interface EntryPriceService {
    * @param symbol the stock symbol
    * @param timeframe the timeframe
    * @param date the reference date
-   * @return the calculated entry price (close + 1%)
+   * @param score the stock score
+   * @return the calculated entry price
    */
-  double calculate(String symbol, TimeFrame timeframe, LocalDate date);
+  double calculate(String symbol, TimeFrame timeframe, LocalDate date, double score);
 }
