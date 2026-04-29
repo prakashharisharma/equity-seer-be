@@ -5,6 +5,7 @@ import com.equityseer.modal.TechnicalIndicator;
 import com.equityseer.service.stock.StockOHLCVService;
 import com.equityseer.service.technical.TechnicalAnalysisService;
 import com.equityseer.type.TimeFrame;
+import com.equityseer.util.MathUtils;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.Builder;
@@ -39,8 +40,12 @@ public class ScoringServiceImpl implements ScoringService {
 
       double finalScore = volScore + maScore;
 
-      finalScore -= calculatePenalties(s);
-      finalScore -= addAdditionalPenalties(s, timeframe, data);
+      if (MathUtils.calculatePercentageChange(
+              s.cur.getOpen().doubleValue(), s.cur.getClose().doubleValue())
+          > 20.0) {
+        finalScore -= calculatePenalties(s);
+        finalScore -= addAdditionalPenalties(s, timeframe, data);
+      }
 
       double result = Math.max(0.0, Math.min(10.0, finalScore));
       return Math.round(result * 100.0) / 100.0;
@@ -131,6 +136,17 @@ public class ScoringServiceImpl implements ScoringService {
     // 🔻 Volume Spike Penalty
     if (s.v0 > s.avgV0 * 3) {
       totalPenalty += 2.0;
+    }
+
+    // 🔻 Bearish EMA5 and EMA20 Trend Penalty
+    double mid = (s.cur.getHigh().doubleValue() + s.cur.getLow().doubleValue()) / 2;
+    if (s.ema5 < s.prevEma5 && s.ema20 < s.prevEma20 && mid < s.cur.getClose().doubleValue()) {
+      totalPenalty += 5.0;
+    }
+
+    // 🔻 Bearish EMA 20 Trend Penalty
+    if (s.ema20 < s.prevEma20 && s.ema5 < s.ema20) {
+      totalPenalty += 3.0;
     }
 
     return totalPenalty;

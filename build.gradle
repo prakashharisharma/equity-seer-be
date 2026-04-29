@@ -41,6 +41,11 @@ subprojects {
 
 
     spotless {
+      def ratchetBranch = project.findProperty('from') ?: 'origin/main'
+      if (ratchetBranch != 'all') {
+        ratchetFrom ratchetBranch
+      }
+
       java {
         target 'src/main/java/**/*.java', 'src/test/java/**/*.java'
 

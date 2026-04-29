@@ -183,11 +183,16 @@ public class ScannerServiceImpl implements ScannerService {
     double avgVol2 = volSma20.get(2).getValue().doubleValue();
 
     boolean conditionA = v0 > v1 && v1 > v2;
-    boolean conditionB = avgVol0 > avgVol1;
-    boolean conditionC = avgVol1 > avgVol2;
-    boolean conditionD = avgVol0 >= (0.95 * avgVol1);
+    boolean conditionB = (v0 > v1 && v0 > v2) && v0 > 2 * v1;
+    boolean conditionC = avgVol0 > avgVol1;
+    boolean conditionD = avgVol1 > avgVol2;
+    boolean conditionE = avgVol0 >= (0.95 * avgVol1);
+    boolean conditionF =
+        (cur.getClose().compareTo(cur.getOpen()) > 0)
+            && (prev.getClose().compareTo(prev.getOpen()) > 0)
+            && (avgVol0 > avgVol1 && avgVol1 > avgVol2);
 
-    return conditionA && (conditionB || conditionC || conditionD);
+    return ((conditionA || conditionB) && (conditionC || conditionD || conditionE)) || conditionF;
   }
 
   private boolean hasPriceActionSignal(
