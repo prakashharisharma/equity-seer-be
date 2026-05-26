@@ -57,8 +57,9 @@ logs/
 *.iml
 out/
 
-# VS Code
+# VS Code / Cursor
 .vscode/
+.cursor/mcp.json
 
 ################################################################################
 # OS (macOS + Windows)

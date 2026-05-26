@@ -186,6 +186,31 @@ public class ScoringServiceImpl implements ScoringService {
       penalty += 3.0;
     }
 
+    // Rule 4: High Change from Lowest Low of Last 6 Candles (-5)
+    if (data.size() >= 6) {
+      double minLow = Double.MAX_VALUE;
+      for (int i = 0; i < 6; i++) {
+        double currentLow = data.get(i).getLow().doubleValue();
+        if (currentLow < minLow) {
+          minLow = currentLow;
+        }
+      }
+
+      double currentHigh = s.cur.getHigh().doubleValue();
+
+      if (minLow > 0) {
+        double changePercent = MathUtils.calculatePercentageChange(minLow, currentHigh);
+
+        if (changePercent >= 50) {
+          penalty += 5.0;
+        } else if (changePercent >= 40) {
+          penalty += 5.0;
+        } else if (changePercent >= 30) {
+          penalty += 3.0;
+        }
+      }
+    }
+
     return penalty;
   }
 
@@ -249,6 +274,7 @@ public class ScoringServiceImpl implements ScoringService {
         technicalAnalysisService.calculateVolumeSMA(symbol, data, 20);
 
     return ScoreSummary.builder()
+        .symbol(symbol)
         .cur(data.get(0))
         .prev(data.get(1))
 
@@ -279,6 +305,7 @@ public class ScoringServiceImpl implements ScoringService {
   @Builder
   private static class ScoreSummary {
 
+    String symbol;
     StockOHLCV cur;
     StockOHLCV prev;
 

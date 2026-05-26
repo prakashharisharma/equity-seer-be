@@ -2,6 +2,10 @@
 
 Multi-module **Gradle** project (Java 21, Spring Boot, Postgres/JPA).
 
+## Cursor / AI setup
+
+Multi-agent playbook, rules, skills, and GitHub MCP: see **[AGENTS.md](AGENTS.md)** and **[.cursor/SETUP.md](.cursor/SETUP.md)**.
+
 ## Modules
 
 - `api`: Spring Boot REST app (Boot Jar)

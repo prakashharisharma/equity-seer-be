@@ -41,8 +41,8 @@ public class AppRunner implements CommandLineRunner {
 
   private void printStockList() {
     // LocalDate date = LocalDate.of(2024, 1, 31);
-    int year = 2025;
-    int month = Month.JUNE.getValue();
+    int year = 2022;
+    int month = Month.JANUARY.getValue();
 
     LocalDate date = YearMonth.of(year, month).atEndOfMonth();
 
