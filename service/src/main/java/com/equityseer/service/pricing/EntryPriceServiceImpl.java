@@ -24,14 +24,20 @@ public class EntryPriceServiceImpl implements EntryPriceService {
       return 0.0;
     }
 
-    StockOHLCV cur = data.get(0);
+    StockOHLCV cur = data.getFirst();
+    double open = cur.getOpen().doubleValue();
     double close = cur.getClose().doubleValue();
     double high = cur.getHigh().doubleValue();
     double low = cur.getLow().doubleValue();
     double mid = (high + low) / 2.0;
 
-    double entryPrice;
-    if (score >= 10.0) {
+    double entryPrice = cur.getClose().doubleValue();
+    if (close < open) {
+      entryPrice = close * 0.995;
+    } else if (close > open) {
+      entryPrice = mid * 1.005;
+    }
+    /* else if (score >= 10.0) {
       entryPrice = Math.min(close * 1.01, high);
     } else if (score >= 9.0) {
       entryPrice = close * 1.005;
@@ -41,7 +47,7 @@ public class EntryPriceServiceImpl implements EntryPriceService {
       entryPrice = mid;
     } else {
       entryPrice = low;
-    }
+    }*/
 
     return Math.round(entryPrice * 100.0) / 100.0;
   }

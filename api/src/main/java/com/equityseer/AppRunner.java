@@ -41,8 +41,8 @@ public class AppRunner implements CommandLineRunner {
 
   private void printStockList() {
     // LocalDate date = LocalDate.of(2024, 1, 31);
-    int year = 2022;
-    int month = Month.JANUARY.getValue();
+    int year = 2026;
+    int month = Month.JULY.getValue();
 
     LocalDate date = YearMonth.of(year, month).atEndOfMonth();
 
@@ -58,7 +58,7 @@ public class AppRunner implements CommandLineRunner {
         double targetPct) {}
 
     stockList.stream()
-        .filter(s -> validationService.isValid(s.getSymbol(), TimeFrame.MONTHLY, date))
+        //  .filter(s -> validationService.isValid(s.getSymbol(), TimeFrame.MONTHLY, date))
         .map(
             s -> {
               double score = scoringService.score(s.getSymbol(), TimeFrame.MONTHLY, date);
@@ -74,7 +74,7 @@ public class AppRunner implements CommandLineRunner {
                   target,
                   MathUtils.calculatePercentageChange(entry, target));
             })
-        .filter(s -> s.score() > 5.0)
+        // .filter(s -> s.score() > 5.0)
         .sorted((a, b) -> Double.compare(b.score(), a.score()))
         .forEach(
             s ->
